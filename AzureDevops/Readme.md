@@ -1,1 +1,1 @@
-<>IAC (Infrastructure as a code)<>
+IAC (Infrastructure as a code)
