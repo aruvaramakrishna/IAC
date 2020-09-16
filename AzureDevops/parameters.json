@@ -10,6 +10,20 @@
         },
         "networkSecurityGroup": {
             "value": "demonsg"
+        },
+        "windowsVM": {
+            "value": "demowinvm"
+        },
+        "adminUsername": {
+            "value": "azureuser"
+        },
+        "adminPassword": {
+            "reference": {
+                "keyVault": {
+                "id": "/subscriptions/bee826dd-cd23-4ca3-971a-2feacbc54b81/resourceGroups/dashboards/providers/Microsoft.KeyVault/vaults/devopssept2020"
+                },
+                "secretName": "winvmpassword"
+            }
         }
     }
 }

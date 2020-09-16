@@ -19,10 +19,28 @@
            "metadata": {
                 "description": "Name of the NSG"
             }
+        },
+        "windowsVM": {
+           "type": "string",
+           "metadata": {
+                "description": "Name of the virtual machine"
+            }
+        },
+        "adminUsername": {
+           "type": "string",
+           "metadata": {
+                "description": "Name of the win vm admin"
+            }
+        },
+        "adminPassword": {
+           "type": "string",
+           "metadata": {
+                "description": "Password of winvm"
+            }
         }
     },
     "variables": {
-        "storageaccountname": "demosa96357841",
+        "storageaccountname": "DEMOSA96357841",
         "publicIPAddress": "demopubip",
         "networkInterface": "demonic"
     },
@@ -32,6 +50,9 @@
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2018-08-01",
             "location": "[resourceGroup().location]",
+             "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroup'))]"
+            ],
            
             "properties": {
                 "addressSpace": {
@@ -43,14 +64,17 @@
                     {
                         "name": "[parameters('SubnetName')]",
                         "properties": {
-                            "addressPrefix": "10.0.0.0/24"
+                            "addressPrefix": "10.0.0.0/24",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroup'))]"
+                            }
                         }
                     }                  
                 ]
             }
         },
         {
-            "name": "[variables('storageaccountname')]",
+            "name": "[toLower(variables('storageaccountname'))]",
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2015-06-15",
             "location": "[resourceGroup().location]",
@@ -88,8 +112,8 @@
                         "properties": {
                             "description": "description",
                             "protocol": "Tcp",
-                            "sourcePortRange": "3389",
-                            "destinationPortRange": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "3389",
                             "sourceAddressPrefix": "*",
                             "destinationAddressPrefix": "*",
                             "access": "Allow",
@@ -106,6 +130,7 @@
             "apiVersion": "2018-08-01",
             "location": "[resourceGroup().location]",
             "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddress'))]",
                 "[resourceId('Microsoft.Network/virtualNetworks', parameters('VirtualNetworkName'))]"
             ],
             "properties": {
@@ -114,12 +139,59 @@
                         "name": "ipConfig1",
                         "properties": {
                             "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddress'))]"
+                            },
                             "subnet": {
                                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('VirtualNetworkName'), parameters('SubnetName'))]"
                             }
                         }
                     }
                 ]
+            }
+        },
+       
+       {
+            "name": "[parameters('windowsVM')]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2019-07-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', toLower(variables('storageaccountname')))]",
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterface'))]"
+            ],
+            "tags": {
+                "displayName": "Prod"
+            },
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_DS1_v2"
+                },
+                "osProfile": {
+                    "computerName": "[parameters('windowsVM')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "MicrosoftWindowsServer",
+                        "offer": "WindowsServer",
+                        "sku": "2016-Datacenter",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "windowsVM1OSDisk",
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterface'))]"
+                        }
+                    ]
+                }              
             }
         }
     ],
