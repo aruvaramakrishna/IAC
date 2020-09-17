@@ -1,0 +1,30 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vNet1Name":
+        {
+            "value": "VNET1"
+        },
+        "vNet2Name": {
+            "value": "VNET2"
+        },
+        "windowsVM1": {
+            "value": "VM1"
+        },
+        "windowsVM2": {
+            "value": "VM2"
+        },
+        "adminUsername": {
+            "value": "azureuser"
+        },
+        "adminPassword": {
+            "reference": {
+                "keyVault": {
+                "id": "/subscriptions/bee826dd-cd23-4ca3-971a-2feacbc54b81/resourceGroups/dashboards/providers/Microsoft.KeyVault/vaults/devopssept2020"
+                },
+                "secretName": "winvmpassword"
+            }
+        }
+    }
+}
