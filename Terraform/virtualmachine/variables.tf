@@ -48,3 +48,11 @@ variable "network_interface_name" {
 variable "windows_virtual_machine_name" {
     default     = "terraformvm"
 }
+
+variable "admin_username" {
+    default     = "azureuser"
+}
+
+variable "admin_password" {
+    default     = "Azuredevops@1234"
+}
